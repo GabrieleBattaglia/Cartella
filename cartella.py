@@ -1,5 +1,6 @@
 # Cartella. Una utility che salva in txt il contenuto di un albero di directories.
 # Data concepimento: giovedì 27 febbraio 2020.
+# 28 giugno 2024, pubblicato su GitHub
 
 import datetime, os
 from os.path import split
