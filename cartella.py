@@ -3,7 +3,6 @@
 # 28 giugno 2024, pubblicato su GitHub
 
 import datetime, os
-from os.path import split
 from GBUtils import dgt
 
 #QC
