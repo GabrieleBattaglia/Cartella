@@ -6,7 +6,7 @@ import datetime, os
 from GBUtils import dgt
 
 #QC
-VERSIONE = "3.2.8, del 16 gennaio 2024."
+VERSIONE = "3.3.0, del 1 agosto 2024."
 ESCLUSIONIPERMANENTI = ["cartella.py", "cartella.app", "cartella", "Cartella.txt", "cartella.exe", "desktop.ini"]
 NONINIZIACON = [".", "_"]
 BYTESGIGABYTES = 1073741824
@@ -109,26 +109,29 @@ for base, cartelle, files in strutturafilesystem:
 	for fil in files:
 		if indentazione:
 			i = (l+1) * 2
-		else: i = 0
+		else:
+			i = 0
 		if numerazione:
 			n = f"{l+1}.{c}. "
 			c += 1
+		original_fil = fil  # Salva il nome completo del file
 		if not estensione:
-			fil = fil.split(".")
-			fil = fil[0]
+			fil = fil.split(".")[0]  # Rimuovi l'estensione solo per l'output
 		if filtrati:
-			est = fil.split(".")[-1]
-			est = est.lower()
+			est = original_fil.split(".")[-1].lower()
 			if est not in filtro:
-				if fil not in ESCLUSIONIPERMANENTI and fil[0] not in NONINIZIACON:
+				if original_fil not in ESCLUSIONIPERMANENTI and original_fil and original_fil[0] not in NONINIZIACON:
 					f.write(f"{' '*i}{n}{fil}\n")
-		if not filtrati:
-			if fil not in ESCLUSIONIPERMANENTI and fil[0] not in NONINIZIACON:
+		else:
+			if original_fil not in ESCLUSIONIPERMANENTI and original_fil and original_fil[0] not in NONINIZIACON:
 				f.write(f"{' '*i}{n}{fil}\n")
 		totaleoggetti += 1
-		fp = os.path.join(base, fil)
-		if not os.path.islink(fp):
-			totalebytes += os.path.getsize(fp)
+		fp = os.path.join(base, original_fil)  # Usa il nome originale per accedere al file
+		if not os.path.islink(fp) and os.path.exists(fp):  # Controlla se il file esiste
+			try:
+				totalebytes += os.path.getsize(fp)
+			except OSError as e:  # Gestisce eventuali errori come permessi o file non accessibili
+				print(f"Errore nell'accesso al file {fp}: {e}")
 
 print(f"Fatto! Troverai cartella.txt in: [{cartellabase}]")
 print(f"Arrivederci da CARTELLA, versione {VERSIONE}.")
