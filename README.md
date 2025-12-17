@@ -1,4 +1,6 @@
 # Cartella
 Salva una collezione di nomi unici in un file di testo.
 
-## Se esegui lo script Python, assicurati di avere GBUtils.py nella stessa cartella. Puoi scaricarlo dall'omonimo progetto su GitHub.
+## Note
+Eseguire lo script Python `cartella.py` nella directory desiderata per generare l'elenco dei file.
+Lo script è ora standalone e non richiede dipendenze esterne.
