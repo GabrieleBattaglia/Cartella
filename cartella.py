@@ -1,124 +1,37 @@
 # Cartella. Una utility che salva in txt il contenuto di un albero di directories.
 # Data concepimento: giovedì 27 febbraio 2020.
 # 28 giugno 2024, pubblicato su GitHub
-# Refactoring: mercoledì 17 dicembre 2025
+# Refactoring GUI: martedì 3 febbraio 2026
 
-import datetime
+import wx
 import os
 import sys
+import datetime
 
-# QC
-VERSIONE = "3.4.0, del 17 dicembre 2025."
+# --- CONFIGURAZIONE E LOGICA ---
+VERSIONE = "4.0.0, del 3 febbraio 2026."
 ESCLUSIONIPERMANENTI = ["cartella.py", "cartella.app", "cartella", "Cartella.txt", "cartella.exe", "desktop.ini"]
 NONINIZIACON = [".", "_"]
 BYTESGIGABYTES = 1073741824
 
-
-def dgt(prompt, smin=0, smax=100):
-    """Gestisce l'input utente in modo sicuro."""
-    while True:
-        try:
-            val = input(prompt)
-            if smin <= len(val) <= smax:
-                return val
-            print(f"Input non valido. Lunghezza attesa tra {smin} e {smax}.")
-        except EOFError:
-            return ""
-        except KeyboardInterrupt:
-            print("\nOperazione annullata dall'utente.")
-            sys.exit(0)
-
-
-def Manuale():
-    '''Visualizza il manuale'''
-    man = ("Benvenuti nel manuale di CARTELLA.\n"
-           "Questa semplice applicazione svolge il compito di salvare, in un file di testo,\n"
-           "il contenuto della cartella in cui si trova e di tutto il contenuto\ndelle relative sottocartelle.\nUsare CARTELLA sarà perciò estremamente facile: basterà incollare cartella.exe\n"
-           "nel percorso desiderato, lanciarlo ed attendere pochi istanti.\n"
-           "Il risultato verrà scritto nel file cartella.txt che troverete dove avete\nsalvato cartella.exe.\n\n"
-           "Attenzione: se cartella.txt esiste già nella posizione da cui eseguite il\n\tprogramma, questo verrà sovrascritto con la nuova versione.\n\n"
-           "Scrivendo 'opzioni' quando richiesto, potrete modificare le opzioni di cartella\n"
-           "cartella possiede 3 opzioni impostate a 'sì' di default. Esse sono:\n"
-           "numerazione: indica se cartella deve indicare il livello di sottocartella cui\n\tappartengono i file e le cartelle riportate nel file dei risultati.\n"
-           "indentazione: specifica se i risultati debbano essere rientrati nel file,\n\tin base al loro livello di appartenenza.\n"
-           "estensione: lascia scegliere all'utente se i risultati devono includere anche\n\tle estensioni dei file.\n"
-           "Digitando filtro, al prompt, potrete indicare una serie di estensioni di file che Cartella non includerà nell'elenco,\n"
-           "questa funzione è utile nel caso in cui vogliate, ad esempio, evitare la visualizzazione di una determinata tipologia di file\n"
-           "Buon divertimento. Gabriele Battaglia\n")
-    print(man)
-    return
-
-
-def Opzioni():
-    '''Stabilisce le opzioni del programma
-    restituisce le booleane corrispondenti'''
-    print("Cambio opzioni.")
-    x = dgt("Vuoi che gli oggetti siano preceduti dal numero del loro livello di appartenenza? S/N ", smin=1, smax=1)
-    numerazione = True if x.lower() == "s" else False
-    
-    x = dgt("Vuoi che il risultato sia formattato con indentazione? S/N ", smin=1, smax=1)
-    indentazione = True if x.lower() == "s" else False
-    
-    x = dgt("Vuoi che i nomi degli oggetti siano completi di estensione? S/N ", smin=1, smax=1)
-    estensione = True if x.lower() == "s" else False
-    
-    print("Grazie")
-    return numerazione, indentazione, estensione
-
-
-def Filtri():
-    '''restituisce la lista delle estensioni da non visualizzare'''
-    print("Bene, scrivi tutte le estensioni che determineranno i file da non includere nella lista.\nInserisci solo l'estensione, senza punto e seguita da invio.\nConcludi con un invio a vuoto.")
-    f = []
-    contatore = 1
-    while True:
-        a = dgt(f"{contatore}a estensione: > ", smax=20)
-        if a == "":
-            break
-        f.append(a.lower())
-        contatore += 1
-    print("Ottimo, verranno esclusi tutti i file che hanno le seguenti estensioni:")
-    for j in f:
-        print(j, end=", ")
-    print("\n")
-    return f
-
-
-def main():
-    filtro = []
-    filtrati, indentati, opzionati, estensionati = False, False, False, False
-    print(f"Chiamato? Ciao! Sono CARTELLA {VERSIONE} e lavoro per te\n\tSe vuoi sapere come funziono, scrivi aiuto,\n\tSe vuoi cambiare le opzioni, scrivi opzioni,\nse vuoi attivare il filtro per escludere determinati file, scrivi filtro, altrimenti batti invio.")
-
-    while True:
-        print("Scegli: Aiuto, opzioni, filtro o invio a vuoto per proseguire.")
-        a = dgt("...> ", smax=7)
-        if a.lower() == "aiuto":
-            Manuale()
-        elif a.lower() == "opzioni":
-            numerazione, indentazione, estensione = Opzioni()
-            opzionati = True
-        elif a.lower() == "filtro":
-            filtro = Filtri()
-            filtrati = True
-        elif a == "":
-            print("Proseguiamo!")
-            break
-    
-    if not opzionati:
-        indentazione, numerazione, estensione = True, True, True
+def genera_report(cartellabase, output_filename, numerazione=True, indentazione=True, estensione=True, filtro=None):
+    """Genera il file di report."""
+    if filtro is None:
+        filtro = []
+    filtrati = len(filtro) > 0
 
     TEMPO = datetime.datetime.now()
-    output_filename = "Cartella.txt"
     
     try:
         f = open(output_filename, "wt", encoding="utf-8")
     except IOError as e:
-        print(f"Errore critico: impossibile scrivere il file {output_filename}. {e}")
-        return
+        return False, f"Errore critico: impossibile scrivere il file {output_filename}. {e}", 0, 0, datetime.timedelta(0)
 
     f.write(f"File generato da CARTELLA, versione: {VERSIONE}".center(80, "-") + "\n")
     
-    cartellabase = os.getcwd()
+    if not cartellabase:
+        cartellabase = os.getcwd()
+        
     strutturafilesystem = os.walk(cartellabase)
     
     totaleoggetti = 0
@@ -139,7 +52,7 @@ def main():
         
         dirname = b[-1]
         if dirname and dirname[0] not in NONINIZIACON:
-             f.write(f"{' '*i}{nc}[{dirname}]...\n")
+             f.write(f"{ ' '*i}{nc}[{dirname}]...\n")
         
         c = 1
         for fil in files:
@@ -151,9 +64,9 @@ def main():
 
             # Gestione estensione e filtri
             nome_base, est_raw = os.path.splitext(original_fil)
-            est = est_raw.lstrip(".").lower() # Rimuove il punto iniziale per confronto pulito
+            ext_pulita = est_raw.lstrip(".").lower() # Rimuove il punto iniziale per confronto pulito
             
-            if filtrati and est in filtro:
+            if filtrati and ext_pulita in filtro:
                 continue
             
             # Formattazione File
@@ -167,7 +80,7 @@ def main():
             nome_visualizzato = original_fil if estensione else nome_base
             
             # Scrittura
-            f.write(f"{' '*i}{n}{nome_visualizzato}\n")
+            f.write(f"{ ' '*i}{n}{nome_visualizzato}\n")
             
             # Aggiornamento statistiche (SOLO SE SCRITTO)
             totaleoggetti += 1
@@ -175,13 +88,9 @@ def main():
             if not os.path.islink(fp) and os.path.exists(fp):
                 try:
                     totalebytes += os.path.getsize(fp)
-                except OSError as e:
-                    # Non stampare errore per ogni file inaccessibile, magari loggalo o ignoralo
+                except OSError:
                     pass
 
-    print(f"Fatto! Troverai {output_filename} in: [{cartellabase}]")
-    print(f"Arrivederci da CARTELLA, versione {VERSIONE}.")
-    
     t = datetime.datetime.now() - TEMPO
     f.write("\n")
     f.write("scritto in Python 3, da Gabriele Battaglia.".center(80, "-") + "\n")
@@ -190,7 +99,133 @@ def main():
     f.write((f"Tempo di generazione: {t.seconds} secondi e {t.microseconds} microsecondi.").center(80, "-"))
     f.close()
     
-    input("Premi INVIO per chiudere.")
+    return True, "Fatto!", totaleoggetti, totalebytes, t
+
+def get_manuale_text():
+    try:
+        if getattr(sys, 'frozen', False):
+            # Se compilato, cerchiamo README.md accanto all'eseguibile
+            base_path = os.path.dirname(sys.executable)
+        else:
+            # Se script, cerchiamo README.md accanto allo script
+            base_path = os.path.dirname(os.path.abspath(__file__))
+            
+        path = os.path.join(base_path, "README.md")
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                return f.read()
+        return f"Manuale (README.md) non trovato in:\n{base_path}"
+    except Exception as e:
+        return f"Errore nel caricamento del manuale: {e}"
+
+# --- INTERFACCIA GRAFICA (GUI) ---
+class CartellaFrame(wx.Frame):
+    def __init__(self, parent, title):
+        super(CartellaFrame, self).__init__(parent, title=title, size=(800, 600))
+
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        # --- Sezione Navigazione (Superiore) ---
+        self.dir_ctrl = wx.GenericDirCtrl(panel, -1, dir=os.getcwd(), style=wx.DIRCTRL_SHOW_FILTERS, filter="All files (*.*)|*.*")
+        
+        self.tree = self.dir_ctrl.GetTreeCtrl()
+        self.tree.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
+
+        vbox.Add(self.dir_ctrl, 2, wx.EXPAND | wx.ALL, 5)
+
+        # --- Sezione Opzioni (Centrale) ---
+        hbox_opts = wx.BoxSizer(wx.HORIZONTAL)
+        
+        self.chk_numerazione = wx.CheckBox(panel, label="Numerazione")
+        self.chk_numerazione.SetValue(True)
+        self.chk_indentazione = wx.CheckBox(panel, label="Indentazione")
+        self.chk_indentazione.SetValue(True)
+        self.chk_estensione = wx.CheckBox(panel, label="Estensione")
+        self.chk_estensione.SetValue(True)
+
+        hbox_opts.Add(self.chk_numerazione, 0, wx.ALL, 5)
+        hbox_opts.Add(self.chk_indentazione, 0, wx.ALL, 5)
+        hbox_opts.Add(self.chk_estensione, 0, wx.ALL, 5)
+
+        vbox.Add(hbox_opts, 0, wx.ALIGN_CENTER | wx.ALL, 5)
+
+        # --- Sezione Manuale (Inferiore) ---
+        self.txt_manual = wx.TextCtrl(panel, style=wx.TE_MULTILINE | wx.TE_READONLY)
+        self.txt_manual.SetValue(get_manuale_text())
+        
+        vbox.Add(self.txt_manual, 1, wx.EXPAND | wx.ALL, 5)
+
+        # --- Binding Generali ---
+        panel.SetSizer(vbox)
+        
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_hook)
+
+        self.Center()
+        self.Show()
+        self.tree.SetFocus()
+
+    def on_tree_key_down(self, event):
+        keycode = event.GetKeyCode()
+        item = self.tree.GetSelection()
+        
+        if keycode == wx.WXK_RIGHT:
+            if item.IsOk() and self.tree.ItemHasChildren(item):
+                self.tree.Expand(item)
+            event.Skip()
+            
+        elif keycode == wx.WXK_LEFT:
+            if item.IsOk():
+                if self.tree.IsExpanded(item):
+                    self.tree.Collapse(item)
+                else:
+                    parent = self.tree.GetItemParent(item)
+                    if parent.IsOk():
+                        self.tree.SelectItem(parent)
+                        self.tree.EnsureVisible(parent)
+        else:
+            event.Skip()
+
+    def on_key_hook(self, event):
+        keycode = event.GetKeyCode()
+        
+        if keycode == wx.WXK_ESCAPE:
+            self.Close()
+        elif keycode == wx.WXK_RETURN:
+            self.avvia_processo()
+        else:
+            event.Skip()
+
+    def avvia_processo(self):
+        path = self.dir_ctrl.GetPath()
+        
+        if os.path.isfile(path):
+            path = os.path.dirname(path)
+            
+        if not os.path.isdir(path):
+             wx.MessageBox("Seleziona una cartella valida!", "Errore", wx.OK | wx.ICON_ERROR)
+             return
+
+        num = self.chk_numerazione.GetValue()
+        ind = self.chk_indentazione.GetValue()
+        ext = self.chk_estensione.GetValue()
+        
+        output_file = "Cartella.txt" 
+        
+        wx.BeginBusyCursor()
+        try:
+            successo, msg, obj, bytes_tot, tempo = genera_report(
+                path, output_file, num, ind, ext
+            )
+        finally:
+            wx.EndBusyCursor()
+            
+        if successo:
+             wx.MessageBox(f"{msg}\nFile creato: {output_file}\nOggetti: {obj}\nDimensione: {bytes_tot/BYTESGIGABYTES:.4f} GB\nTempo: {tempo}", "Completato", wx.OK | wx.ICON_INFORMATION)
+        else:
+             wx.MessageBox(msg, "Errore", wx.OK | wx.ICON_ERROR)
 
 if __name__ == "__main__":
-    main()
+    app = wx.App()
+    frame = CartellaFrame(None, title=f"Cartella GUI - {VERSIONE}")
+    app.MainLoop()
