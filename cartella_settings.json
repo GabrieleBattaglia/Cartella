@@ -1,0 +1,11 @@
+{
+    "numerazione": true,
+    "indentazione": true,
+    "estensione": true,
+    "filtro_nomi": [
+        "cartella",
+        "_*",
+        ".*"
+    ],
+    "filtro_estensioni": []
+}
