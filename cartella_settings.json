@@ -1,6 +1,6 @@
 {
     "numerazione": true,
-    "indentazione": true,
+    "indentazione": false,
     "estensione": true,
     "filtro_nomi": [
         "cartella",
