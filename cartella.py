@@ -11,7 +11,7 @@ import json
 import fnmatch
 
 # --- CONFIGURAZIONE ---
-VERSIONE = "4.1.2, del 3 marzo 2026."
+VERSIONE = "4.2.0, del 14 aprile 2026."
 ESCLUSIONIPERMANENTI = ["cartella.py", "cartella.app", "cartella", "Cartella.txt", "cartella.exe", "desktop.ini", "cartella_settings.json"]
 NONINIZIACON = [".", "_"]
 BYTESGIGABYTES = 1073741824
@@ -29,7 +29,8 @@ def carica_impostazioni():
         "indentazione": True,
         "estensione": True,
         "filtro_nomi": [],
-        "filtro_estensioni": []
+        "filtro_estensioni": [],
+        "ultima_cartella": ""
     }
     if os.path.exists(path):
         try:
@@ -233,14 +234,27 @@ class FilterDialog(wx.Dialog):
 class CartellaFrame(wx.Frame):
     def __init__(self, parent, title):
         super(CartellaFrame, self).__init__(parent, title=title, size=(800, 650))
-        
+
         self.settings = carica_impostazioni()
 
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Sezione Navigazione
-        self.dir_ctrl = wx.GenericDirCtrl(panel, -1, dir=os.getcwd(), style=wx.DIRCTRL_SHOW_FILTERS, filter="All files (*.*)|*.*")
+        # Ripristina l'ultima cartella o usa la directory corrente
+        ultima = self.settings.get("ultima_cartella", "")
+        if not ultima or not os.path.exists(ultima):
+            ultima = os.getcwd()
+
+        # Aggiunta barra indirizzo per percorsi di rete
+        hbox_path = wx.BoxSizer(wx.HORIZONTAL)
+        lbl_path = wx.StaticText(panel, label="Percorso:")
+        self.txt_percorso = wx.TextCtrl(panel, value=ultima, style=wx.TE_PROCESS_ENTER)
+        hbox_path.Add(lbl_path, 0, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
+        hbox_path.Add(self.txt_percorso, 1, wx.EXPAND | wx.ALL, 5)
+        vbox.Add(hbox_path, 0, wx.EXPAND)
+
+        self.dir_ctrl = wx.GenericDirCtrl(panel, -1, dir=ultima, style=wx.DIRCTRL_SHOW_FILTERS, filter="All files (*.*)|*.*")
         self.tree = self.dir_ctrl.GetTreeCtrl()
         self.tree.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
         vbox.Add(self.dir_ctrl, 2, wx.EXPAND | wx.ALL, 5)
@@ -274,6 +288,7 @@ class CartellaFrame(wx.Frame):
         panel.SetSizer(vbox)
         
         # Binding
+        self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key_hook)
         self.btn_filtri.Bind(wx.EVT_BUTTON, self.on_apri_filtri)
         
@@ -281,9 +296,30 @@ class CartellaFrame(wx.Frame):
         self.chk_indentazione.Bind(wx.EVT_CHECKBOX, self.on_opt_change)
         self.chk_estensione.Bind(wx.EVT_CHECKBOX, self.on_opt_change)
 
+        self.txt_percorso.Bind(wx.EVT_TEXT_ENTER, self.on_path_enter)
+        self.Bind(wx.EVT_DIRCTRL_SELECTIONCHANGED, self.on_dir_changed, self.dir_ctrl)
+
         self.Center()
         self.Show()
         self.tree.SetFocus()
+
+    def on_close(self, event):
+        self.settings["ultima_cartella"] = self.dir_ctrl.GetPath()
+        salva_impostazioni(self.settings)
+        event.Skip()
+
+    def on_path_enter(self, event):
+        percorso = self.txt_percorso.GetValue().strip()
+        if os.path.exists(percorso):
+            self.dir_ctrl.SetPath(percorso)
+        else:
+            wx.MessageBox("Il percorso inserito non esiste.", "Errore Percorso", wx.OK | wx.ICON_ERROR)
+
+    def on_dir_changed(self, event):
+        path = self.dir_ctrl.GetPath()
+        if path:
+            self.txt_percorso.SetValue(path)
+        event.Skip()
 
     def on_opt_change(self, event):
         self.settings["numerazione"] = self.chk_numerazione.GetValue()
@@ -323,7 +359,11 @@ class CartellaFrame(wx.Frame):
         if keycode == wx.WXK_ESCAPE:
             self.Close()
         elif keycode == wx.WXK_RETURN:
-            self.avvia_processo()
+            # Se il focus e' nella barra del percorso, non avviare il processo
+            if wx.Window.FindFocus() == self.txt_percorso:
+                self.on_path_enter(None)
+            else:
+                self.avvia_processo()
         else:
             event.Skip()
 
@@ -335,7 +375,7 @@ class CartellaFrame(wx.Frame):
              wx.MessageBox("Seleziona una cartella valida!", "Errore", wx.OK | wx.ICON_ERROR)
              return
 
-        output_file = "Cartella.txt" 
+        output_file = os.path.join(get_base_path(), "Cartella.txt") 
         wx.BeginBusyCursor()
         try:
             successo, msg, obj, bytes_tot, tempo = genera_report(path, output_file, self.settings)
