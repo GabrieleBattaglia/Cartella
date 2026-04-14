@@ -11,7 +11,7 @@ import json
 import fnmatch
 
 # --- CONFIGURAZIONE ---
-VERSIONE = "4.1.2, del 3 marzo 2026."
+VERSIONE = "4.2.1, del 14 aprile 2026."
 ESCLUSIONIPERMANENTI = ["cartella.py", "cartella.app", "cartella", "Cartella.txt", "cartella.exe", "desktop.ini", "cartella_settings.json"]
 NONINIZIACON = [".", "_"]
 BYTESGIGABYTES = 1073741824
@@ -29,13 +29,14 @@ def carica_impostazioni():
         "indentazione": True,
         "estensione": True,
         "filtro_nomi": [],
-        "filtro_estensioni": []
+        "filtro_estensioni": [],
+        "ultima_cartella": ""
     }
     if os.path.exists(path):
         try:
             with open(path, "r", encoding="utf-8") as f:
                 return {**default, **json.load(f)}
-        except:
+        except Exception:
             return default
     return default
 
@@ -233,14 +234,19 @@ class FilterDialog(wx.Dialog):
 class CartellaFrame(wx.Frame):
     def __init__(self, parent, title):
         super(CartellaFrame, self).__init__(parent, title=title, size=(800, 650))
-        
+
         self.settings = carica_impostazioni()
 
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Sezione Navigazione
-        self.dir_ctrl = wx.GenericDirCtrl(panel, -1, dir=os.getcwd(), style=wx.DIRCTRL_SHOW_FILTERS, filter="All files (*.*)|*.*")
+        # Ripristina l'ultima cartella o usa la directory corrente
+        ultima = self.settings.get("ultima_cartella", "")
+        if not ultima or not os.path.exists(ultima):
+            ultima = os.getcwd()
+
+        self.dir_ctrl = wx.GenericDirCtrl(panel, -1, dir=ultima, style=wx.DIRCTRL_SHOW_FILTERS, filter="All files (*.*)|*.*")
         self.tree = self.dir_ctrl.GetTreeCtrl()
         self.tree.Bind(wx.EVT_KEY_DOWN, self.on_tree_key_down)
         vbox.Add(self.dir_ctrl, 2, wx.EXPAND | wx.ALL, 5)
@@ -274,6 +280,7 @@ class CartellaFrame(wx.Frame):
         panel.SetSizer(vbox)
         
         # Binding
+        self.Bind(wx.EVT_CLOSE, self.on_close)
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key_hook)
         self.btn_filtri.Bind(wx.EVT_BUTTON, self.on_apri_filtri)
         
@@ -284,6 +291,11 @@ class CartellaFrame(wx.Frame):
         self.Center()
         self.Show()
         self.tree.SetFocus()
+
+    def on_close(self, event):
+        self.settings["ultima_cartella"] = self.dir_ctrl.GetPath()
+        salva_impostazioni(self.settings)
+        event.Skip()
 
     def on_opt_change(self, event):
         self.settings["numerazione"] = self.chk_numerazione.GetValue()
@@ -335,10 +347,18 @@ class CartellaFrame(wx.Frame):
              wx.MessageBox("Seleziona una cartella valida!", "Errore", wx.OK | wx.ICON_ERROR)
              return
 
-        output_file = "Cartella.txt" 
+        output_file = os.path.join(get_base_path(), "Cartella.txt") 
         wx.BeginBusyCursor()
         try:
-            successo, msg, obj, bytes_tot, tempo = genera_report(path, output_file, self.settings)
+            try:
+                successo, msg, obj, bytes_tot, tempo = genera_report(path, output_file, self.settings)
+            except Exception as e:
+                import traceback
+                successo = False
+                msg = f"Errore interno (crash): {e}\n{traceback.format_exc()}"
+                obj = 0
+                bytes_tot = 0
+                tempo = 0
         finally:
             wx.EndBusyCursor()
             

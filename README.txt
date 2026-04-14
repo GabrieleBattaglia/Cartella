@@ -1,11 +1,14 @@
 CARTELLA
 Utility per la generazione di report strutturati delle directory.
 
-Versione: 4.1.2 (3 marzo 2026)
+Versione: 4.2.1 (14 aprile 2026)
 Autore: Gabriele Battaglia
 
 DESCRIZIONE:
 Cartella genera un file di testo (Cartella.txt) che contiene l'elenco di tutti i file e le sottocartelle presenti nel percorso selezionato.
+
+NOVITA' VERSIONE 4.2.0/4.2.1:
+- Memorizzazione dell'ultima cartella esplorata alla chiusura del programma.
 
 NOVITA' VERSIONE 4.1.0/4.1.1:
 - Interfaccia Grafica completa (GUI) con wxPython.
