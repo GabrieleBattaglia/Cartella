@@ -1,11 +1,12 @@
 {
     "numerazione": true,
-    "indentazione": false,
+    "indentazione": true,
     "estensione": true,
     "filtro_nomi": [
         "cartella",
         "_*",
         ".*"
     ],
-    "filtro_estensioni": []
+    "filtro_estensioni": [],
+    "ultima_cartella": "E:\\Audio\\Belgio 2004"
 }
