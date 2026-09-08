@@ -1,9 +1,14 @@
 *.txt
 !README.txt
+!collaudo.txt
+!analisi_codice_revisione_*.txt
 __*.*
 dist/
 build/
 *.spec
+!cartella.spec
 *.exe
 __pycache__/
 *.zip
+cartella_settings.json
+cartella_settings.json.*

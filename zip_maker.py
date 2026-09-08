@@ -33,7 +33,7 @@ from GBUtils import crea_archivio_release
 QUI = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(QUI, "dist")
 ACCANTO = ["README.txt", "LICENSE"]
-FUORI = ["cartella_settings.json", "Cartella.txt", "desktop.ini"]
+FUORI = ["cartella_settings.json", "cartella_settings.json.rotto", "desktop.ini", "auto_updater_error.log"]
 
 
 def versione():
@@ -53,9 +53,7 @@ def main():
     try:
         for nome in ACCANTO:
             shutil.copy2(os.path.join(QUI, nome), os.path.join(DIST, nome))
-        crea_archivio_release(
-            "Cartella", cartella_dist="dist",
-            archivio=f"cartella_portable_v{versione()}.zip", escludi=FUORI)
+        crea_archivio_release("Cartella", cartella_dist="dist", archivio=f"cartella_portable_v{versione()}.zip", escludi=FUORI)
     except (FileNotFoundError, OSError, ValueError) as e:
         print(f"Archivio non creato: {e}")
         return 1

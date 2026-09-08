@@ -1,0 +1,18 @@
+# Configurazione ruff di Cartella.
+# Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode).
+line-length = 140
+
+[lint]
+select = ["E", "F", "W", "B", "SIM", "UP", "I", "C4", "RET", "BLE", "S", "RUF", "DTZ"]
+ignore = [
+    # Righe lunghe: i messaggi all'utente stanno su una riga sola, e
+    # spezzarli renderebbe piu' difficile ritrovarli nel codice.
+    "E501",
+    # Lo stile di Gabriele ammette l'istruzione breve sulla stessa riga.
+    "E701",
+    "E702",
+    "E741",
+    # L'ora scritta in testa all'elenco e' di proposito quella locale: e'
+    # l'ora che segna l'orologio di chi ha lanciato la scansione.
+    "DTZ005",
+]
