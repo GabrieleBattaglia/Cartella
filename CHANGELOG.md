@@ -5,6 +5,8 @@ Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, 
 
 ## [5.0.0] - 2026-09-08
 
+Pubblicata su GitHub il 2026-09-08 come release `v5.0.0`, con il solo archivio `cartella_portable_v5.0.0.zip` in allegato. Verificato che l'auto updater la riconosca e ne riceva le note. Issue 1 chiusa.
+
 Revisione 1 del refactoring generale, più la finestra di aggiornamento chiesta dalla issue 1.
 
 ### Aggiunto
