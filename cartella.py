@@ -20,13 +20,14 @@ import wx
 # GBUtils serve per i suoni e per l'aggiornamento. Da sorgente il programma
 # deve partire anche dove manca: resta muto e senza controllo aggiornamenti.
 try:
-    from GBUtils import Acusticator
+    from GBUtils import Acusticator, cartella_applicazione
 except ImportError:
     Acusticator = None
+    cartella_applicazione = None
 
 APP_NAME = "cartella"
-VERSIONE = "5.0.0"
-RELEASE_DATE = "2026-09-08"
+VERSIONE = "5.0.1"
+RELEASE_DATE = "2026-09-12"
 AUTORI = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode)"
 API_RELEASE = "https://api.github.com/repos/GabrieleBattaglia/Cartella/releases/latest"
 NOME_IMPOSTAZIONI = "cartella_settings.json"
@@ -56,7 +57,12 @@ IMPOSTAZIONI_PREDEFINITE = {
 
 
 def get_base_path():
-    """Il percorso base, accanto allo script o all'eseguibile PyInstaller."""
+    """Il percorso base, accanto allo script o all'eseguibile PyInstaller.
+    La logica sta in GBUtils, come tutte le utilita' condivise. Le tre righe
+    di riserva servono al caso, dichiarato in cima al file, di un avvio da
+    sorgente dove GBUtils non c'e': il programma deve partire lo stesso."""
+    if cartella_applicazione is not None:
+        return cartella_applicazione()
     if getattr(sys, "frozen", False):
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))

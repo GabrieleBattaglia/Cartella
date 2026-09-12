@@ -3,6 +3,10 @@
 Tutti i cambiamenti e le novità introdotte nelle versioni di Cartella.
 Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, che stavano dentro il manuale, sono riportate in fondo.
 
+## [5.0.1] - 2026-09-12
+
+I percorsi dei file passano da GBUtils, che dalla V138 li offre a tutti con cartella_applicazione e percorso_risorsa: la logica che dice dove stanno i dati e le risorse era riscritta in dieci progetti, e adesso e' scritta in un posto solo. Il comportamento non cambia, tranne che una risorsa che nel pacchetto non c'e' viene ora cercata anche accanto all'eseguibile.
+
 ## [5.0.0] - 2026-09-08
 
 Pubblicata su GitHub il 2026-09-08 come release `v5.0.0`, con il solo archivio `cartella_portable_v5.0.0.zip` in allegato. Verificato che l'auto updater la riconosca e ne riceva le note. Issue 1 chiusa.
