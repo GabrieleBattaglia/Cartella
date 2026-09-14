@@ -33,7 +33,7 @@ except ImportError:
         return f"{int(byte)} byte"
 
 APP_NAME = "cartella"
-VERSIONE = "5.0.2"
+VERSIONE = "5.0.3"
 RELEASE_DATE = "2026-09-14"
 AUTORI = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode)"
 API_RELEASE = "https://api.github.com/repos/GabrieleBattaglia/Cartella/releases/latest"
@@ -494,6 +494,10 @@ class CartellaFrame(wx.Frame):
         self.settings, avviso_impostazioni = carica_impostazioni()
         self.scansione_in_corso = False
         self.chiusura_per_aggiornamento = False
+        # L'attesa dello scaricamento: nasce quando l'utente dice di si' e
+        # sparisce con l'esito. Vive qui perche' chi la apre e chi la chiude
+        # sono due momenti diversi.
+        self.attesa_aggiornamento = None
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
         ultima = self.settings.get("ultima_cartella", "")
@@ -639,65 +643,97 @@ class CartellaFrame(wx.Frame):
 
     # Aggiornamento.
 
-    def proponi_aggiornamento(self, versione_nuova, indirizzo, note):
-        """Arriva dal thread del controllo, a finestra ancora viva."""
+    def chiedi_aggiornamento(self, versione_attuale, versione_nuova, note):
+        """La risposta dell'utente a gestisci_aggiornamento, che intanto aspetta.
+
+        La domanda nasce nel thread del controllo, ma la finestra vive su
+        quello principale: la si porta li' con CallAfter e si resta fermi
+        finche' non si sa la risposta, perche' e' lei a dire se scaricare.
+        Il parametro versione_attuale arriva per completezza; qui si usa la
+        costante, che e' la stessa cosa scritta in un posto solo.
+        """
+        risposta = []
+        risposto = threading.Event()
+
+        def nella_finestra():
+            try:
+                if not self:
+                    return
+                dlg = DialogoAggiornamento(self, versione_nuova, note)
+                scelta = dlg.ShowModal()
+                dlg.Destroy()
+                if scelta != wx.ID_YES:
+                    return
+                risposta.append(True)
+                # Lo scaricamento comincia appena questa funzione risponde e
+                # dura quanto dura: l'attesa si apre qui e la chiude l'esito,
+                # che arriva sempre, riuscito o no.
+                self.attesa_aggiornamento = wx.BusyInfo("Scarico l'aggiornamento, aspetta.", parent=self)
+            finally:
+                risposto.set()
+
+        wx.CallAfter(nella_finestra)
+        risposto.wait()
+        return bool(risposta)
+
+    def avvisa_aggiornamento(self, testo):
+        """Gli esiti che gestisci_aggiornamento riferisce, pochi e tutti utili:
+        il pacchetto non ancora pronto, lo scaricamento fallito, il programma
+        che sta per chiudersi. Arrivano dal thread, quindi passano di qui."""
+        wx.CallAfter(self.mostra_esito_aggiornamento, testo)
+
+    def mostra_esito_aggiornamento(self, testo):
+        # Rilasciare l'attesa la fa sparire: se non era aperta, non cambia nulla.
+        self.attesa_aggiornamento = None
         if not self:
             return
-        if not indirizzo:
-            wx.MessageBox(
-                f"E' disponibile la versione {versione_nuova},\nma il pacchetto non e' ancora pronto.\nRiprova piu' tardi.",
-                "Aggiornamento disponibile",
-                wx.OK | wx.ICON_INFORMATION,
-                self,
-            )
-            return
-        dlg = DialogoAggiornamento(self, versione_nuova, note)
-        scelta = dlg.ShowModal()
-        dlg.Destroy()
-        if scelta != wx.ID_YES:
-            return
-        from GBUtils import perform_update
+        wx.MessageBox(testo, "Aggiornamento", wx.OK | wx.ICON_INFORMATION, self)
 
-        attesa = wx.BusyInfo("Scarico l'aggiornamento, aspetta.", parent=self)
-        try:
-            pronto = perform_update(indirizzo, APP_NAME)
-        finally:
-            del attesa
-        if pronto:
-            # Le impostazioni si salvano passando da on_close, come a ogni uscita.
-            self.chiusura_per_aggiornamento = True
-            self.Close()
-        else:
-            suona("errore")
-            wx.MessageBox("Aggiornamento non riuscito, si prosegue con questa versione.", "Errore", wx.OK | wx.ICON_ERROR, self)
-
-    def segnala_errore_aggiornamento(self, errore):
-        if self:
-            wx.MessageBox(f"Controllo aggiornamenti non riuscito:\n{errore}", "Aggiornamento", wx.OK | wx.ICON_WARNING, self)
+    def chiudi_per_aggiornamento(self):
+        if not self:
+            return
+        # Le impostazioni si salvano passando da on_close, come a ogni uscita.
+        self.chiusura_per_aggiornamento = True
+        self.Close()
 
 
 def avvia_controllo_aggiornamenti(frame):
     """Controlla in un thread se c'e' una versione nuova, solo per l'eseguibile.
 
-    L'esito arriva alla finestra con wx.CallAfter, e la finestra verifica di
-    esistere ancora prima di mostrare qualcosa: il controllo dipende dalla
-    rete e puo' finire dopo che l'utente ha gia' chiuso il programma.
+    Dalla 5.0.3 il giro lo conduce gestisci_aggiornamento di GBUtils: qui
+    restano la finestra, che e' la sola cosa che Cartella sappia fare meglio
+    di lei, e il ponte fra il thread e la finestra. La funzione tace finche'
+    non c'e' davvero un aggiornamento, quindi agli avvii normali, che sono
+    quasi tutti, non compare niente.
     """
     if not getattr(sys, "frozen", False):
         return
     try:
-        from GBUtils import update_checker
+        from GBUtils import gestisci_aggiornamento
     except ImportError:
         return
 
     def lavoro():
+        # Un avviso senza aggiornamento vuol dire che qualcosa e' andato storto,
+        # il pacchetto non ancora pronto o lo scaricamento fallito: e' il caso
+        # in cui la 5.0.2 suonava l'errore, e continua a farlo.
+        avvisi = []
+
+        def avvisa(testo):
+            avvisi.append(testo)
+            frame.avvisa_aggiornamento(testo)
+
         try:
-            disponibile, versione_nuova, indirizzo, note = update_checker(VERSIONE, API_RELEASE, cartella_log=get_base_path())
+            pronto = gestisci_aggiornamento(
+                APP_NAME, VERSIONE, API_RELEASE,
+                proponi=frame.chiedi_aggiornamento, avvisa=avvisa)
         except Exception as e:  # noqa: BLE001 - un thread che muore in silenzio non direbbe niente a nessuno
-            wx.CallAfter(frame.segnala_errore_aggiornamento, e)
+            wx.CallAfter(frame.mostra_esito_aggiornamento, f"Controllo aggiornamenti non riuscito:\n{e}")
             return
-        if disponibile:
-            wx.CallAfter(frame.proponi_aggiornamento, versione_nuova, indirizzo, note)
+        if pronto:
+            wx.CallAfter(frame.chiudi_per_aggiornamento)
+        elif avvisi:
+            suona("errore")
 
     threading.Thread(target=lavoro, daemon=True).start()
 
@@ -706,10 +742,19 @@ if __name__ == "__main__":
     app = wx.App()
     frame = CartellaFrame(None, title=f"Cartella {VERSIONE}")
     if "--prova-aggiornamento" in sys.argv:
-        # Mostra la finestra di aggiornamento con dati finti, per provarla
-        # con lo screen reader senza aspettare una release nuova.
+        # Il giro dell'aggiornamento con dati finti, per provarlo con lo screen
+        # reader senza aspettare una release nuova. Gira in un thread come
+        # quello vero, perche' la domanda aspetta la risposta e dal thread
+        # principale bloccherebbe la finestra che deve mostrarla.
         note_di_prova = "Prima novita' di prova.\nSeconda novita' di prova, un po' piu' lunga, per vedere come si scorre il testo con le frecce.\nTerza e ultima."
-        wx.CallAfter(frame.proponi_aggiornamento, "9.9.9", "prova", note_di_prova)
+
+        def prova_aggiornamento():
+            if frame.chiedi_aggiornamento(VERSIONE, "9.9.9", note_di_prova):
+                # Il tempo di sentire l'attesa, poi l'esito che la chiude.
+                time.sleep(2)
+                frame.avvisa_aggiornamento("Prova finita: qui il programma si chiuderebbe per applicare l'aggiornamento.")
+
+        threading.Thread(target=prova_aggiornamento, daemon=True).start()
     else:
         avvia_controllo_aggiornamenti(frame)
     app.MainLoop()

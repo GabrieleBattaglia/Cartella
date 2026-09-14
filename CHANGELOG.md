@@ -3,6 +3,12 @@
 Tutti i cambiamenti e le novità introdotte nelle versioni di Cartella.
 Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, che stavano dentro il manuale, sono riportate in fondo.
 
+## [5.0.3] - 2026-09-14
+
+Il controllo aggiornamenti passa adesso da `gestisci_aggiornamento` di GBUtils, che dalla V159 sa tacere quando chi la chiama ha una finestra propria: e' la issue 21, aperta proprio perche' Cartella 5.0.0 non poteva usarla e si era riscritta il giro per conto suo. Qui restano la finestra, che con le note scorrevoli e i due pulsanti etichettati e' la parte fatta meglio, e il ponte fra il thread del controllo e la finestra; il controllo della versione, lo scaricamento e gli esiti sono adesso scritti in un posto solo per tutto il parco software. Per chi usa il programma cambia una cosa sola: quando l'aggiornamento e' pronto, prima che la finestra si chiuda compare un messaggio che lo dice, dove prima il programma si chiudeva e basta.
+
+La versione compilata, al primo avvio dopo un aggiornamento, si porta via anche i residui che la vecchia installazione aveva lasciato dentro `_internal`: e' la issue 27, e la pulizia arriva da GBUtils senza che Cartella debba fare niente.
+
 ## [5.0.2] - 2026-09-14
 
 La dimensione in byte del riepilogo arriva adesso da GBUtils, che con la issue 9 la offre a tutto il parco software: la stessa formula era riscritta qui, in Scriba e a mano in altri due programmi, e adesso e' scritta in un posto solo. Il riepilogo non cambia di un carattere, verificato valore per valore dal banco di prova di GBUtils; qui restano soltanto i gusti di Cartella, cioe' un decimale, la virgola e i byte interi sotto il chilo. La durata resta invece dov'era, perche' Cartella la dice a parole, e i nomi delle unita', i plurali e la congiunzione dell'ultimo pezzo sono lingua, che GBUtils non parla. Su una macchina dove GBUtils manca il programma parte ancora, e le dimensioni escono in byte senza salire di unita'.
