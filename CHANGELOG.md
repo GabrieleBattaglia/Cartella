@@ -3,6 +3,10 @@
 Tutti i cambiamenti e le novità introdotte nelle versioni di Cartella.
 Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, che stavano dentro il manuale, sono riportate in fondo.
 
+## [5.0.2] - 2026-09-14
+
+La dimensione in byte del riepilogo arriva adesso da GBUtils, che con la issue 9 la offre a tutto il parco software: la stessa formula era riscritta qui, in Scriba e a mano in altri due programmi, e adesso e' scritta in un posto solo. Il riepilogo non cambia di un carattere, verificato valore per valore dal banco di prova di GBUtils; qui restano soltanto i gusti di Cartella, cioe' un decimale, la virgola e i byte interi sotto il chilo. La durata resta invece dov'era, perche' Cartella la dice a parole, e i nomi delle unita', i plurali e la congiunzione dell'ultimo pezzo sono lingua, che GBUtils non parla. Su una macchina dove GBUtils manca il programma parte ancora, e le dimensioni escono in byte senza salire di unita'.
+
 ## [5.0.1] - 2026-09-12
 
 I percorsi dei file passano da GBUtils, che dalla V138 li offre a tutti con cartella_applicazione e percorso_risorsa: la logica che dice dove stanno i dati e le risorse era riscritta in dieci progetti, e adesso e' scritta in un posto solo. Il comportamento non cambia, tranne che una risorsa che nel pacchetto non c'e' viene ora cercata anche accanto all'eseguibile.

@@ -17,17 +17,24 @@ import traceback
 
 import wx
 
-# GBUtils serve per i suoni e per l'aggiornamento. Da sorgente il programma
-# deve partire anche dove manca: resta muto e senza controllo aggiornamenti.
+# GBUtils serve per i suoni, per l'aggiornamento e per scrivere le dimensioni.
+# Da sorgente il programma deve partire anche dove manca: resta muto, senza
+# controllo aggiornamenti e con le dimensioni in byte.
 try:
-    from GBUtils import Acusticator, cartella_applicazione
+    from GBUtils import Acusticator, cartella_applicazione, formatta_dimensione
 except ImportError:
     Acusticator = None
     cartella_applicazione = None
 
+    def formatta_dimensione(byte, **gusto):
+        """Il ripiego di quando GBUtils non c'e': i byte, senza salire di
+        unita'. Il rapporto esce lo stesso, con le dimensioni piu' scomode da
+        leggere, invece di fermarsi con un errore."""
+        return f"{int(byte)} byte"
+
 APP_NAME = "cartella"
-VERSIONE = "5.0.1"
-RELEASE_DATE = "2026-09-12"
+VERSIONE = "5.0.2"
+RELEASE_DATE = "2026-09-14"
 AUTORI = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode)"
 API_RELEASE = "https://api.github.com/repos/GabrieleBattaglia/Cartella/releases/latest"
 NOME_IMPOSTAZIONI = "cartella_settings.json"
@@ -38,7 +45,11 @@ NOME_MANUALE = "README.txt"
 # sono di norma di servizio.
 FILTRI_PREDEFINITI = ["Cartella (*.txt", "cartella.exe", "cartella_settings.json", "desktop.ini", ".*", "_*"]
 FORMATO_IMPOSTAZIONI = 2
-UNITA = ["byte", "KB", "MB", "GB", "TB"]
+UNITA = ("byte", "KB", "MB", "GB", "TB")
+# Come Cartella scrive una dimensione: un decimale, la virgola e, sotto il
+# chilo, i byte interi. La formula sta in GBUtils dalla V156, con la issue 9,
+# perche' era riscritta in quattro programmi; qui resta soltanto il gusto.
+COME_BYTE = {"decimali": 1, "separatore": ",", "unita": UNITA, "byte_interi": True}
 SUONI = {
     "avvio_scansione": "partenza",
     "fine_scansione": "terminata",
@@ -160,19 +171,6 @@ def salva_impostazioni(impostazioni):
 # Formattazioni.
 
 
-def formatta_dimensione(byte):
-    """Una dimensione con l'unita' adatta alla grandezza: 980 byte, 12,3 MB, 1,1 GB."""
-    valore = float(byte)
-    unita = UNITA[0]
-    for unita in UNITA:
-        if valore < 1024 or unita == UNITA[-1]:
-            break
-        valore /= 1024
-    if unita == UNITA[0]:
-        return f"{int(valore)} byte"
-    return f"{valore:.1f}".replace(".", ",") + f" {unita}"
-
-
 def formatta_durata(secondi):
     """Una durata a parole, con i decimi solo sotto il secondo."""
     if secondi < 1:
@@ -259,10 +257,10 @@ class Risultato:
         """Il riepilogo in frasi, uguale in fondo al file e nella finestra finale."""
         righe = [f"Oggetti elencati: {self.oggetti}."]
         if self.non_misurati:
-            righe.append(f"Dimensione totale: almeno {formatta_dimensione(self.byte)},")
+            righe.append(f"Dimensione totale: almeno {formatta_dimensione(self.byte, **COME_BYTE)},")
             righe.append(f"{plurale(self.non_misurati, 'file non misurato', 'file non misurati')}.")
         else:
-            righe.append(f"Dimensione totale: {formatta_dimensione(self.byte)}.")
+            righe.append(f"Dimensione totale: {formatta_dimensione(self.byte, **COME_BYTE)}.")
         righe.append(f"Tempo di generazione: {formatta_durata(self.durata)}.")
         if self.esclusi:
             righe.append(f"Esclusi dai filtri: {plurale(self.totale_esclusi, 'elemento', 'elementi')}.")
