@@ -7,6 +7,8 @@ Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, 
 
 Il controllo aggiornamenti passa adesso da `gestisci_aggiornamento` di GBUtils, che dalla V159 sa tacere quando chi la chiama ha una finestra propria: e' la issue 21, aperta proprio perche' Cartella 5.0.0 non poteva usarla e si era riscritta il giro per conto suo. Qui restano la finestra, che con le note scorrevoli e i due pulsanti etichettati e' la parte fatta meglio, e il ponte fra il thread del controllo e la finestra; il controllo della versione, lo scaricamento e gli esiti sono adesso scritti in un posto solo per tutto il parco software. Per chi usa il programma cambia una cosa sola: quando l'aggiornamento e' pronto, prima che la finestra si chiuda compare un messaggio che lo dice, dove prima il programma si chiudeva e basta.
 
+Se ne va l'argomento `--prova-aggiornamento`, che dalla 5.0.0 apriva la finestra dell'aggiornamento con dati finti: serviva a provarla con lo screen reader senza aspettare una release, e quel compito e' finito.
+
 La versione compilata, al primo avvio dopo un aggiornamento, si porta via anche i residui che la vecchia installazione aveva lasciato dentro `_internal`: e' la issue 27, e la pulizia arriva da GBUtils senza che Cartella debba fare niente.
 
 ## [5.0.2] - 2026-09-14

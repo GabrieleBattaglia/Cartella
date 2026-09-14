@@ -741,20 +741,5 @@ def avvia_controllo_aggiornamenti(frame):
 if __name__ == "__main__":
     app = wx.App()
     frame = CartellaFrame(None, title=f"Cartella {VERSIONE}")
-    if "--prova-aggiornamento" in sys.argv:
-        # Il giro dell'aggiornamento con dati finti, per provarlo con lo screen
-        # reader senza aspettare una release nuova. Gira in un thread come
-        # quello vero, perche' la domanda aspetta la risposta e dal thread
-        # principale bloccherebbe la finestra che deve mostrarla.
-        note_di_prova = "Prima novita' di prova.\nSeconda novita' di prova, un po' piu' lunga, per vedere come si scorre il testo con le frecce.\nTerza e ultima."
-
-        def prova_aggiornamento():
-            if frame.chiedi_aggiornamento(VERSIONE, "9.9.9", note_di_prova):
-                # Il tempo di sentire l'attesa, poi l'esito che la chiude.
-                time.sleep(2)
-                frame.avvisa_aggiornamento("Prova finita: qui il programma si chiuderebbe per applicare l'aggiornamento.")
-
-        threading.Thread(target=prova_aggiornamento, daemon=True).start()
-    else:
-        avvia_controllo_aggiornamenti(frame)
+    avvia_controllo_aggiornamenti(frame)
     app.MainLoop()
