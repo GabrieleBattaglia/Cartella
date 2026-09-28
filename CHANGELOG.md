@@ -3,6 +3,14 @@
 Tutti i cambiamenti e le novità introdotte nelle versioni di Cartella.
 Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, che stavano dentro il manuale, sono riportate in fondo.
 
+## [5.1.1] - 2026-09-28
+
+L'aggiornamento si applica anche se il messaggio finale si legge con calma. Accettato un aggiornamento, compare il messaggio che il programma si chiude per applicarlo; fino alla 5.0.3, se l'OK arrivava dopo piu' di 30 secondi, l'aggiornamento non si applicava, il programma si chiudeva senza ripartire e nasceva `auto_updater_error.log`. Lo script che sostituisce il programma partiva prima del messaggio e aspettava la chiusura solo 30 secondi. Adesso GBUtils V172 dice il messaggio prima di avviare lo script, e qui il messaggio aspetta l'OK prima di lasciarlo partire. E' lo stesso difetto della issue 13 di Dadillo, trovato provando un aggiornamento vero di Dadillo il 28 settembre 2026. La correzione vale per gli aggiornamenti che partiranno da questa versione in poi.
+
+## [5.1.0] - 2026-09-28
+
+La finestra di aggiornamento aspetta due minuti: se nessuno risponde si chiude da sola come Non adesso, il programma prosegue e l'aggiornamento viene riproposto al prossimo avvio. La finestra lo dice sotto la riga delle versioni. E' la regola di Gabriele del 28 settembre 2026 per tutto il parco software: il tempo lo decide `gestisci_aggiornamento` di GBUtils V172, che lo passa alla finestra, e da console vale lo stesso.
+
 ## [5.0.3] - 2026-09-14
 
 Il controllo aggiornamenti passa adesso da `gestisci_aggiornamento` di GBUtils, che dalla V159 sa tacere quando chi la chiama ha una finestra propria: e' la issue 21, aperta proprio perche' Cartella 5.0.0 non poteva usarla e si era riscritta il giro per conto suo. Qui restano la finestra, che con le note scorrevoli e i due pulsanti etichettati e' la parte fatta meglio, e il ponte fra il thread del controllo e la finestra; il controllo della versione, lo scaricamento e gli esiti sono adesso scritti in un posto solo per tutto il parco software. Per chi usa il programma cambia una cosa sola: quando l'aggiornamento e' pronto, prima che la finestra si chiuda compare un messaggio che lo dice, dove prima il programma si chiudeva e basta.

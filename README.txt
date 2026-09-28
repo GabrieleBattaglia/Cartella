@@ -37,7 +37,7 @@ IMPOSTAZIONI
 Le impostazioni stanno in cartella_settings.json accanto al programma, con l'ultima cartella visitata. Si salvano a ogni cambiamento e alla chiusura. Se il file non si legge, il programma lo dice, riparte dai valori predefiniti e mette da parte il file rotto con l'estensione .rotto, cosi' i filtri si possono recuperare.
 
 AGGIORNAMENTI
-L'eseguibile controlla all'avvio se esiste una versione nuova. Se c'e', una finestra dice la versione disponibile e quella in uso, mostra le novita' in un campo di testo che si scorre con le frecce, e offre due pulsanti: Aggiorna adesso e Non adesso. Escape e la chiusura della finestra valgono come Non adesso. Se qualcosa va storto, l'errore finisce in auto_updater_error.log accanto al programma.
+L'eseguibile controlla all'avvio se esiste una versione nuova. Se c'e', una finestra dice la versione disponibile e quella in uso, mostra le novita' in un campo di testo che si scorre con le frecce, e offre due pulsanti: Aggiorna adesso e Non adesso. Escape e la chiusura della finestra valgono come Non adesso. Se nessuno risponde entro due minuti, la finestra si chiude da sola come Non adesso, il programma prosegue e l'aggiornamento viene riproposto al prossimo avvio. Dopo il si', quando l'aggiornamento e' pronto, un messaggio avvisa che il programma si chiude per applicarlo: si puo' leggere con calma, perche' la sostituzione parte solo dopo l'OK. Se qualcosa va storto, l'errore finisce in auto_updater_error.log accanto al programma.
 
 NOTE
 Il manuale e' questo file README.txt, che deve stare accanto al programma.

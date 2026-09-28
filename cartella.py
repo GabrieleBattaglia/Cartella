@@ -1,5 +1,6 @@
 # Cartella. Una utility che salva in txt il contenuto di un albero di directories.
-# Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode)
+# Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode),
+# dalla 5.1 anche ClaudIA (Claude Opus 5.5, UltraCode).
 # Data concepimento: giovedi' 27 febbraio 2020.
 # 28 giugno 2024, pubblicato su GitHub.
 # Refactoring GUI: martedi' 3 marzo 2026.
@@ -33,9 +34,9 @@ except ImportError:
         return f"{int(byte)} byte"
 
 APP_NAME = "cartella"
-VERSIONE = "5.0.3"
-RELEASE_DATE = "2026-09-14"
-AUTORI = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode)"
+VERSIONE = "5.1.1"
+RELEASE_DATE = "2026-09-28"
+AUTORI = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)"
 API_RELEASE = "https://api.github.com/repos/GabrieleBattaglia/Cartella/releases/latest"
 NOME_IMPOSTAZIONI = "cartella_settings.json"
 NOME_MANUALE = "README.txt"
@@ -460,12 +461,22 @@ class DialogoAggiornamento(wx.Dialog):
 
     Le note si leggono in un campo di testo, dove si scorrono e rileggono con
     le frecce; escape e la chiusura della finestra valgono come non adesso.
+    Dalla 5.1.0, con attesa in secondi, la finestra aspetta una risposta al
+    massimo quel tempo, poi si chiude da sola come non adesso e il programma
+    prosegue: l'aggiornamento torna al prossimo avvio. Il tempo lo decide
+    gestisci_aggiornamento di GBUtils, due minuti di serie.
     """
 
-    def __init__(self, parent, versione_nuova, note):
+    def __init__(self, parent, versione_nuova, note, attesa=None):
         super().__init__(parent, title="Aggiornamento disponibile", size=(560, 480))
         vbox = wx.BoxSizer(wx.VERTICAL)
         testo = f"E' disponibile la versione {versione_nuova}. Tu hai la {VERSIONE}."
+        if attesa:
+            testo += (
+                f"\nSe non rispondi entro {durata_attesa(attesa)},\n"
+                "la finestra si chiude da sola e\n"
+                "te lo ripropongo al prossimo avvio."
+            )
         vbox.Add(wx.StaticText(self, label=testo), 0, wx.ALL, 10)
         vbox.Add(wx.StaticText(self, label="Novita' di questa versione:"), 0, wx.LEFT | wx.RIGHT, 10)
         contenuto = (note or "").strip() or "Nessuna nota per questa versione."
@@ -483,6 +494,22 @@ class DialogoAggiornamento(wx.Dialog):
         self.SetAffirmativeId(wx.ID_YES)
         self.SetEscapeId(wx.ID_NO)
         self.txt_note.SetFocus()
+        if attesa:
+            wx.CallLater(int(attesa * 1000), self._scaduta)
+
+    def _scaduta(self):
+        # La finestra puo' essere gia' chiusa, e anche distrutta: allora il
+        # suo oggetto vale falso e non c'e' niente da fare.
+        if self and self.IsModal():
+            self.EndModal(wx.ID_NO)
+
+
+def durata_attesa(secondi):
+    """Il tempo dell'attesa a parole: 2 minuti, 1 minuto, 90 secondi."""
+    if secondi % 60:
+        return f"{int(secondi)} secondi"
+    minuti = int(secondi // 60)
+    return "1 minuto" if minuti == 1 else f"{minuti} minuti"
 
 
 # Interfaccia principale.
@@ -643,7 +670,7 @@ class CartellaFrame(wx.Frame):
 
     # Aggiornamento.
 
-    def chiedi_aggiornamento(self, versione_attuale, versione_nuova, note):
+    def chiedi_aggiornamento(self, versione_attuale, versione_nuova, note, attesa=None):
         """La risposta dell'utente a gestisci_aggiornamento, che intanto aspetta.
 
         La domanda nasce nel thread del controllo, ma la finestra vive su
@@ -651,6 +678,9 @@ class CartellaFrame(wx.Frame):
         finche' non si sa la risposta, perche' e' lei a dire se scaricare.
         Il parametro versione_attuale arriva per completezza; qui si usa la
         costante, che e' la stessa cosa scritta in un posto solo.
+        attesa, dalla 5.1.0, e' il tempo massimo per rispondere che GBUtils
+        V172 passa alla proposta: allo scadere la finestra si chiude come non
+        adesso.
         """
         risposta = []
         risposto = threading.Event()
@@ -659,7 +689,7 @@ class CartellaFrame(wx.Frame):
             try:
                 if not self:
                     return
-                dlg = DialogoAggiornamento(self, versione_nuova, note)
+                dlg = DialogoAggiornamento(self, versione_nuova, note, attesa=attesa)
                 scelta = dlg.ShowModal()
                 dlg.Destroy()
                 if scelta != wx.ID_YES:
@@ -679,15 +709,27 @@ class CartellaFrame(wx.Frame):
     def avvisa_aggiornamento(self, testo):
         """Gli esiti che gestisci_aggiornamento riferisce, pochi e tutti utili:
         il pacchetto non ancora pronto, lo scaricamento fallito, il programma
-        che sta per chiudersi. Arrivano dal thread, quindi passano di qui."""
-        wx.CallAfter(self.mostra_esito_aggiornamento, testo)
+        che sta per chiudersi. Arrivano dal thread, quindi passano di qui.
+        Dalla 5.1.1 si resta fermi finche' l'utente non chiude il messaggio,
+        come per la proposta: GBUtils V172 dice che il programma si chiude
+        prima di avviare lo script che lo sostituisce, e l'attesa dell'OK non
+        deve consumare i 30 secondi entro cui il programma deve uscire. Fino
+        alla 5.0.3 il messaggio si apriva e questa funzione tornava subito:
+        con l'OK premuto dopo 30 secondi l'aggiornamento non si applicava."""
+        letto = threading.Event()
+        wx.CallAfter(self.mostra_esito_aggiornamento, testo, letto)
+        letto.wait()
 
-    def mostra_esito_aggiornamento(self, testo):
-        # Rilasciare l'attesa la fa sparire: se non era aperta, non cambia nulla.
-        self.attesa_aggiornamento = None
-        if not self:
-            return
-        wx.MessageBox(testo, "Aggiornamento", wx.OK | wx.ICON_INFORMATION, self)
+    def mostra_esito_aggiornamento(self, testo, letto=None):
+        try:
+            # Rilasciare l'attesa la fa sparire: se non era aperta, non cambia nulla.
+            self.attesa_aggiornamento = None
+            if not self:
+                return
+            wx.MessageBox(testo, "Aggiornamento", wx.OK | wx.ICON_INFORMATION, self)
+        finally:
+            if letto is not None:
+                letto.set()
 
     def chiudi_per_aggiornamento(self):
         if not self:
