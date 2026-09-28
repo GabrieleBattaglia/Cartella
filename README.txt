@@ -1,6 +1,6 @@
 CARTELLA
 Scrive in un file di testo l'elenco di tutto cio' che sta in una cartella e nelle sue sottocartelle.
-Versione 5.0.0 del 8 settembre 2026.
+Versione 5.1.1 del 28 settembre 2026.
 Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode).
 
 COSA FA
