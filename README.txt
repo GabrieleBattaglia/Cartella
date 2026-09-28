@@ -1,7 +1,7 @@
 CARTELLA
 Scrive in un file di testo l'elenco di tutto cio' che sta in una cartella e nelle sue sottocartelle.
 Versione 5.1.1 del 28 settembre 2026.
-Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode).
+Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode; dalla 5.1 Claude Opus 5.5, UltraCode).
 
 COSA FA
 Si sceglie una cartella nell'albero, si preme invio, e Cartella scrive accanto al programma un file di testo chiamato con il nome della cartella scandita, la data e l'ora, per esempio Cartella (Belgio 2004) - 2026-09-08 - 16.55.txt. Ogni scansione ha il proprio file, e gli elenchi precedenti restano. Il file comincia con la versione del programma, la data e l'ora della scansione e la cartella di partenza; poi viene l'elenco; in fondo il riepilogo.
