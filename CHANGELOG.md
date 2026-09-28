@@ -3,6 +3,14 @@
 Tutti i cambiamenti e le novità introdotte nelle versioni di Cartella.
 Il changelog nasce con la versione 5.0.0. Le novità delle versioni precedenti, che stavano dentro il manuale, sono riportate in fondo.
 
+## [5.1.2] - 2026-09-28
+
+Il pacchetto diventa una cartella: `cartella.exe` con accanto `_internal`, il manuale e la licenza, al posto del file unico. E' la regola di Gabriele del 28 settembre 2026 per tutti i suoi programmi, nata proprio qui. Provando l'aggiornamento vero dalla 5.0.0 alla 5.1.1, la versione nuova veniva installata ma non ripartiva: compariva la finestra "Error" con "Security validation failure: failed to obtain executable path for parent process". Un eseguibile a file unico gira in due processi legati da variabili d'ambiente, e lo script di aggiornamento, nato dal secondo, le passava al programma rilanciato, che si credeva figlio di un processo che non c'era piu'. A cartella il problema non esiste.
+
+Chi aggiorna dalla 5.0.0 o dalla 5.1.1 non dovrebbe vederlo nemmeno questa volta: l'eseguibile a cartella, lanciato con le stesse variabili ereditate che fermavano quello a file unico, parte regolarmente. Provato con un esperimento sul pacchetto della 5.1.2.
+
+Tolti anche gli a capo a meta' frase: l'avviso dei due minuti, il riepilogo della dimensione quando qualche file non si e' misurato, la nota sulle cartelle non lette e l'avviso delle impostazioni rotte stanno adesso su una riga, come frasi intere.
+
 ## [5.1.1] - 2026-09-28
 
 L'aggiornamento si applica anche se il messaggio finale si legge con calma. Accettato un aggiornamento, compare il messaggio che il programma si chiude per applicarlo; fino alla 5.0.3, se l'OK arrivava dopo piu' di 30 secondi, l'aggiornamento non si applicava, il programma si chiudeva senza ripartire e nasceva `auto_updater_error.log`. Lo script che sostituisce il programma partiva prima del messaggio e aspettava la chiusura solo 30 secondi. Adesso GBUtils V172 dice il messaggio prima di avviare lo script, e qui il messaggio aspetta l'OK prima di lasciarlo partire. E' lo stesso difetto della issue 13 di Dadillo, trovato provando un aggiornamento vero di Dadillo il 28 settembre 2026. La correzione vale per gli aggiornamenti che partiranno da questa versione in poi.

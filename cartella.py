@@ -34,7 +34,7 @@ except ImportError:
         return f"{int(byte)} byte"
 
 APP_NAME = "cartella"
-VERSIONE = "5.1.1"
+VERSIONE = "5.1.2"
 RELEASE_DATE = "2026-09-28"
 AUTORI = "Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Opus 5.5, UltraCode)"
 API_RELEASE = "https://api.github.com/repos/GabrieleBattaglia/Cartella/releases/latest"
@@ -147,8 +147,7 @@ def carica_impostazioni():
         avviso = (
             f"Le impostazioni salvate non si leggono: {e}.\n"
             "Riparto da quelle predefinite.\n"
-            f"Il file rotto e' {os.path.basename(rotto)},\n"
-            "accanto al programma."
+            f"Il file rotto e' {os.path.basename(rotto)}, accanto al programma."
         )
         return normalizza_impostazioni({}), avviso
     return normalizza_impostazioni(dati), ""
@@ -258,8 +257,10 @@ class Risultato:
         """Il riepilogo in frasi, uguale in fondo al file e nella finestra finale."""
         righe = [f"Oggetti elencati: {self.oggetti}."]
         if self.non_misurati:
-            righe.append(f"Dimensione totale: almeno {formatta_dimensione(self.byte, **COME_BYTE)},")
-            righe.append(f"{plurale(self.non_misurati, 'file non misurato', 'file non misurati')}.")
+            righe.append(
+                f"Dimensione totale: almeno {formatta_dimensione(self.byte, **COME_BYTE)}, "
+                f"{plurale(self.non_misurati, 'file non misurato', 'file non misurati')}."
+            )
         else:
             righe.append(f"Dimensione totale: {formatta_dimensione(self.byte, **COME_BYTE)}.")
         righe.append(f"Tempo di generazione: {formatta_durata(self.durata)}.")
@@ -473,9 +474,8 @@ class DialogoAggiornamento(wx.Dialog):
         testo = f"E' disponibile la versione {versione_nuova}. Tu hai la {VERSIONE}."
         if attesa:
             testo += (
-                f"\nSe non rispondi entro {durata_attesa(attesa)},\n"
-                "la finestra si chiude da sola e\n"
-                "te lo ripropongo al prossimo avvio."
+                f"\nSe non rispondi entro {durata_attesa(attesa)}, la finestra "
+                "si chiude da sola e te lo ripropongo al prossimo avvio."
             )
         vbox.Add(wx.StaticText(self, label=testo), 0, wx.ALL, 10)
         vbox.Add(wx.StaticText(self, label="Novita' di questa versione:"), 0, wx.LEFT | wx.RIGHT, 10)
@@ -664,8 +664,7 @@ class CartellaFrame(wx.Frame):
         suona("fine_scansione")
         righe = ["Fatto.", f"File: {risultato.percorso}", *risultato.righe_riepilogo()]
         if risultato.non_letti:
-            righe.append("L'elenco delle cartelle non lette")
-            righe.append("sta in fondo al file.")
+            righe.append("L'elenco delle cartelle non lette sta in fondo al file.")
         wx.MessageBox("\n".join(righe), "Completato", wx.OK | wx.ICON_INFORMATION, self)
 
     # Aggiornamento.

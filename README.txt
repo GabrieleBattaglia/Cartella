@@ -1,6 +1,6 @@
 CARTELLA
 Scrive in un file di testo l'elenco di tutto cio' che sta in una cartella e nelle sue sottocartelle.
-Versione 5.1.1 del 28 settembre 2026.
+Versione 5.1.2 del 28 settembre 2026.
 Autori: Gabriele Battaglia (IZ4APU) & ClaudIA (Claude Fable 5.1, UltraCode; dalla 5.1 Claude Opus 5.5, UltraCode).
 
 COSA FA
@@ -35,6 +35,9 @@ Esempi: backup* esclude tutto cio' che comincia per backup; tmp, fra le estensio
 
 IMPOSTAZIONI
 Le impostazioni stanno in cartella_settings.json accanto al programma, con l'ultima cartella visitata. Si salvano a ogni cambiamento e alla chiusura. Se il file non si legge, il programma lo dice, riparte dai valori predefiniti e mette da parte il file rotto con l'estensione .rotto, cosi' i filtri si possono recuperare.
+
+INSTALLAZIONE
+Si estrae l'archivio in una cartella qualsiasi e si avvia cartella.exe. Accanto all'eseguibile c'e' la cartella _internal, che contiene tutto cio' che gli serve per funzionare: deve restare li', e non va spostata ne' cancellata. Dalla 5.1.2 il programma e' distribuito cosi', e non piu' come file unico.
 
 AGGIORNAMENTI
 L'eseguibile controlla all'avvio se esiste una versione nuova. Se c'e', una finestra dice la versione disponibile e quella in uso, mostra le novita' in un campo di testo che si scorre con le frecce, e offre due pulsanti: Aggiorna adesso e Non adesso. Escape e la chiusura della finestra valgono come Non adesso. Se nessuno risponde entro due minuti, la finestra si chiude da sola come Non adesso, il programma prosegue e l'aggiornamento viene riproposto al prossimo avvio. Dopo il si', quando l'aggiornamento e' pronto, un messaggio avvisa che il programma si chiude per applicarlo: si puo' leggere con calma, perche' la sostituzione parte solo dopo l'OK. Se qualcosa va storto, l'errore finisce in auto_updater_error.log accanto al programma.
